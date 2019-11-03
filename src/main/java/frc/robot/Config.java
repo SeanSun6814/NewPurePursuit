@@ -41,4 +41,11 @@ public class Config {
         practiceRobotConfig.kA = 0;
         return practiceRobotConfig;
     }
+
+    @Override
+    public String toString() {
+        return "Config [kA=" + kA + ", kS=" + kS + ", kV=" + kV + ", lookAheadDistance=" + lookAheadDistance
+                + ", maxAcc=" + maxAcc + ", maxAngVel=" + maxAngVel + ", maxVel=" + maxVel + ", spacing=" + spacing
+                + ", targetTolerance=" + targetTolerance + ", trackWidth=" + trackWidth + "]";
+    }
 }

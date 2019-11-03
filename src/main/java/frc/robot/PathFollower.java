@@ -43,14 +43,14 @@ public class PathFollower {
         getPathTotalDistance();
     }
 
-    public Vector update(Point robotPos, double angle, double dt) {
+    public MotorOutputs update(Point robotPos, double angle, double dt) {
         this.robotPos = robotPos;
         this.angle = Math.toRadians(angle + 90);
         this.dt = dt;
 
         getFinishedPath();
         if (isDone)
-            return new Vector(0, 0);
+            return new MotorOutputs(0, 0);
 
         getClosestWaypoint();
         getInterpolatedWaypoint();
@@ -74,7 +74,7 @@ public class PathFollower {
 
         updatePrevs();
 
-        return new Vector(leftVel, rightVel);
+        return new MotorOutputs(leftVel, rightVel);
     }
 
     private void getInterpolatedWaypoint() {
@@ -165,7 +165,7 @@ public class PathFollower {
 
     public void getCurvature() {
 
-        double gyro = Math.PI - angle;// TODO: ???
+        double gyro = Math.PI - angle;
 
         double horizontalDistance2LookAheadPoint;
         double a = -Math.tan(gyro);
@@ -182,12 +182,15 @@ public class PathFollower {
     }
 
     private void getProgress() {
-        int i = prevBackClosestWaypointIndex;
+        if (isDone) {
+            progress = 100;
+            return;
+        }
+        int addFrom = Math.min(prevBackClosestWaypointIndex, backClosestWaypointIndex);
+        int addTo = Math.max(prevBackClosestWaypointIndex, backClosestWaypointIndex);
         int incDirection = (int) Math.signum(backClosestWaypointIndex - prevBackClosestWaypointIndex);
-        while (i != backClosestWaypointIndex) {
-            solidDistanceTravelled += distanceBetween(path.get(prevBackClosestWaypointIndex),
-                    path.get(backClosestWaypointIndex)) * incDirection;
-            i += incDirection;
+        for (int i = addFrom; i < addTo; i++) {
+            solidDistanceTravelled += distanceBetween(path.get(i), path.get(i + 1)) * incDirection;
         }
 
         double currentDistance = solidDistanceTravelled
