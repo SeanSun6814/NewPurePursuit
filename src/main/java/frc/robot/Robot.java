@@ -48,6 +48,7 @@ public class Robot extends TimedRobot {
   private PathFollower pathFollower;
   private Logger logger;
   private Config config;
+  private boolean driveReversed = false;
 
   @Override
   public void robotInit() {
@@ -101,7 +102,12 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {
     dt = Timer.getFPGATimestamp() - prevTimestamp;
     odometer.update(getLeftEncoder(), getRightEncoder(), getGyroAngle());
-    MotorOutputs speeds = pathFollower.update(odometer.get(), getGyroAngle(), dt);
+
+    double pathFollowerGyro = getGyroAngle();
+    if (driveReversed)
+      pathFollowerGyro *= -1;
+
+    MotorOutputs speeds = pathFollower.update(odometer.get(), pathFollowerGyro, dt);
     double leftSpeed = speeds.left;
     double rightSpeed = speeds.right;
 
@@ -122,7 +128,11 @@ public class Robot extends TimedRobot {
     } else if (rightSpeed < -0.001) {
       rightOutput -= config.kS;
     }
-
+    
+    if (driveReversed) {
+      leftOutput *= -1;
+      rightOutput *= -1;
+    }
     setMotors(leftOutput, rightOutput);
 
     logData();
