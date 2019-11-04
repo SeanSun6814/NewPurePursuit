@@ -1,6 +1,6 @@
 package frc.robot;
 
-public class Waypoint extends Point{
+public class Waypoint extends Point {
     public double v = 0;
 
     public Waypoint(double x, double y, double v) {

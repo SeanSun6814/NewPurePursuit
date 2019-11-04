@@ -33,13 +33,15 @@ public class PathFollower {
         ArrayList<Waypoint> path = new ArrayList<Waypoint>(
                 Arrays.asList(new Waypoint(1.7235169999999997, 4.092194), new Waypoint(2.4474169999999997, 4.092194),
                         new Waypoint(4.092702, 3.8159690000000004), new Waypoint(4.803902, 3.8159690000000004)));
-        path = new ArrayList<Waypoint>(
-                Arrays.asList(new Waypoint(1, 4), new Waypoint(400, 4)));
+        path = new ArrayList<Waypoint>(Arrays.asList(new Waypoint(1, 4), new Waypoint(400, 4)));
 
         Config config = Config.getRobotConfig();
         path = new PathGenerator().generate(path, config);
         PathFollower pathFollower = new PathFollower(path, config);
         System.out.println(pathFollower.pathTotalDistance);
+        pathFollower.path.forEach((waypoint) -> {
+            System.out.println("Path " + waypoint);
+        });
     }
 
     public PathFollower(ArrayList<Waypoint> path, Config config) {

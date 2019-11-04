@@ -46,7 +46,7 @@ public class Robot extends TimedRobot {
   private Odometer odometer = new Odometer();
   private PathGenerator pathGenerator = new PathGenerator();
   private PathFollower pathFollower;
-  private Logger logger;
+  private Logger logger = new Logger();
   private Config config;
   private boolean driveReversed = false;
 
@@ -72,6 +72,14 @@ public class Robot extends TimedRobot {
     config = Config.getRobotConfig();
     path = pathGenerator.generate(path, config);
     pathFollower = new PathFollower(path, config);
+
+    logger.log("Config", config);
+    logger.log("TotalDistance", pathFollower.pathTotalDistance);
+
+    path.forEach((waypoint) -> {
+      logger.log("Path", waypoint);
+    });
+
   }
 
   @Override
@@ -85,18 +93,19 @@ public class Robot extends TimedRobot {
     odometer.reset();
     prevLeftSpeed = 0;
     prevRightSpeed = 0;
-    logger = new Logger();
-
-    logger.log("Config", config);
-    logger.log("Path", pathFollower.path);
-    logger.log("TotalDistance", pathFollower.pathTotalDistance);
-
     prevTimestamp = Timer.getFPGATimestamp();
   }
 
   double dt = 0;
   double prevLeftSpeed = 0;
   double prevRightSpeed = 0;
+
+  double leftSpeed;
+  double rightSpeed;
+  double leftAccel;
+  double rightAccel;
+  double leftOutput;
+  double rightOutput;
 
   @Override
   public void autonomousPeriodic() {
@@ -108,14 +117,14 @@ public class Robot extends TimedRobot {
       pathFollowerGyro *= -1;
 
     MotorOutputs speeds = pathFollower.update(odometer.get(), pathFollowerGyro, dt);
-    double leftSpeed = speeds.left;
-    double rightSpeed = speeds.right;
+    leftSpeed = speeds.left;
+    rightSpeed = speeds.right;
 
-    double leftAccel = (leftSpeed - prevLeftSpeed) * (1 / dt);
-    double rightAccel = (rightSpeed - prevRightSpeed) * (1 / dt);
+    leftAccel = (leftSpeed - prevLeftSpeed) * (1 / dt);
+    rightAccel = (rightSpeed - prevRightSpeed) * (1 / dt);
 
-    double leftOutput = leftSpeed * config.kV + leftAccel * config.kA;
-    double rightOutput = rightSpeed * config.kV + rightAccel * config.kA;
+    leftOutput = leftSpeed * config.kV + leftAccel * config.kA;
+    rightOutput = rightSpeed * config.kV + rightAccel * config.kA;
 
     if (leftSpeed > 0.001) {
       leftOutput += config.kS;
@@ -128,7 +137,7 @@ public class Robot extends TimedRobot {
     } else if (rightSpeed < -0.001) {
       rightOutput -= config.kS;
     }
-    
+
     if (driveReversed) {
       leftOutput *= -1;
       rightOutput *= -1;
@@ -143,8 +152,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledInit() {
-    if (logger != null)
-      logger.flush();
+    logger.flush();
   }
 
   @Override
@@ -195,6 +203,15 @@ public class Robot extends TimedRobot {
     logger.log("curvature", pathFollower.curvature);
     logger.log("dist2Target", pathFollower.dist2Target);
     logger.log("targetVelocity", pathFollower.targetVelocity);
+
+    logger.log("leftSpeed", leftSpeed);
+    logger.log("rightSpeed", rightSpeed);
+    logger.log("leftAccel", leftAccel);
+    logger.log("rightAccel", rightAccel);
+    logger.log("leftOutput", leftOutput);
+    logger.log("rightOutput", rightOutput);
+    logger.log("leftActualSpeed", leftMaster.getSelectedSensorVelocity() * kDriveTick2Feet * 10);
+    logger.log("rightActualSpeed", rightMaster.getSelectedSensorVelocity() * kDriveTick2Feet * 10);
   }
 
   public void displaySmartDashboard() {

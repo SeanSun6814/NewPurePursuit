@@ -34,6 +34,10 @@ public class Logger {
         }
     }
 
+    public void log(Object message) {
+        log("Default", message);
+    }
+
     public void log(String title, Object message) {
         writer.println(Timer.getFPGATimestamp() + "," + title + "," + message);
     }
