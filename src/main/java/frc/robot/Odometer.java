@@ -24,6 +24,12 @@ public class Odometer {
         prevRightEncoderValue = rightEncoder;
     }
 
+    public void set(Point pt) {
+        x = pt.x;
+        y = pt.y;
+        prevLeftEncoderValue = prevRightEncoderValue = 0;
+    }
+
     public void reset() {
         x = y = prevLeftEncoderValue = prevRightEncoderValue = 0;
     }

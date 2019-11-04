@@ -90,7 +90,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     resetSensors();
-    odometer.reset();
+    odometer.set(pathFollower.path.get(0));
     prevLeftSpeed = 0;
     prevRightSpeed = 0;
     prevTimestamp = Timer.getFPGATimestamp();
