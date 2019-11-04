@@ -76,6 +76,7 @@ public class Robot extends TimedRobot {
     logger.log("Config", config);
     logger.log("TotalDistance", pathFollower.pathTotalDistance);
 
+    logger.log("DrivingDirection", driveReversed);
     path.forEach((waypoint) -> {
       logger.log("Path", waypoint);
     });
