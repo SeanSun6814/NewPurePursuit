@@ -124,7 +124,7 @@ public class PathFollower {
         int searchFrom = prevBackClosestWaypointIndex;
         int searchTo = Math.min(searchFrom + 5, path.size());
 
-        if (!onPath) {
+        if (!onPath || prevBackClosestWaypointIndex == 0) {
             searchTo = path.size();
         }
 

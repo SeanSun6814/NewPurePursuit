@@ -1,7 +1,11 @@
 package frc.robot;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 
 import frc.robot.Waypoint;
 
@@ -11,18 +15,48 @@ public class PathGenerator {
 
     public static void main(String[] args) {
         PathGenerator pathGenerator = new PathGenerator();
+
+        long startTime = System.currentTimeMillis();
         Config config = Config.getPracticeRobotConfig();
 
-        ArrayList<Waypoint> waypoints = new ArrayList<Waypoint>(
-                Arrays.asList(new Waypoint(1.7235169999999997, 4.092194), new Waypoint(2.4474169999999997, 4.092194),
-                        new Waypoint(4.092702, 3.8159690000000004), new Waypoint(4.803902, 3.8159690000000004)));
-
+        // ArrayList<Waypoint> waypoints = new ArrayList<Waypoint>(
+        // Arrays.asList(new Waypoint(1.7235169999999997, 4.092194), new
+        // Waypoint(2.4474169999999997, 4.092194),
+        // new Waypoint(4.092702, 3.8159690000000004), new Waypoint(4.803902,
+        // 3.8159690000000004)));
+        int j = 0;
+        ArrayList<Waypoint> waypoints = new ArrayList<Waypoint>(Arrays.asList(//
+                new Waypoint((++j) * 50, j * 50), //
+                new Waypoint((j + 1) * 50, j * 50), //
+                new Waypoint((++j) * 50, j * 50), //
+                new Waypoint((j + 1) * 50, j * 50), //
+                new Waypoint((++j) * 50, j * 50), //
+                new Waypoint((j + 1) * 50, j * 50), //
+                new Waypoint((++j) * 50, j * 50), //
+                new Waypoint((j + 1) * 50, j * 50), //
+                new Waypoint((++j) * 50, j * 50), //
+                new Waypoint((j + 1) * 50, j * 50), //
+                new Waypoint((++j) * 50, j * 50), //
+                new Waypoint((j + 1) * 50, j * 50)));
         waypoints = pathGenerator.generate(waypoints, config);
+        double execTime = ((System.currentTimeMillis() - startTime) / 1000.0);
         System.out.println("Path: [" + waypoints.size() + "]");
         for (int i = 0; i < waypoints.size(); i++) {
-            System.out.println(i + "]: " + waypoints.get(i));
+            System.out.println("[" + i + "]: " + waypoints.get(i));
+        }
+        try {
+            String time = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date());
+            PrintWriter writer = new PrintWriter("./Log " + time + ".csv");
+            for (int i = 0; i < waypoints.size(); i++) {
+                writer.println(i + ", " + waypoints.get(i));
+            }
+            writer.flush();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         }
         System.out.println("__________________________\n\n");
+        System.out.println("Exec time: " + execTime);
+
     }
 
     public ArrayList<Waypoint> generate(ArrayList<Waypoint> nodeOnlyPath, Config config) {
