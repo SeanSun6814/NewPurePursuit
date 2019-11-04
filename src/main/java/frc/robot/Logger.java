@@ -26,8 +26,8 @@ public class Logger {
     public Logger() {
         try {
             String time = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date());
-            // writer = new PrintWriter("/home/lvuser/Log" + time + ".csv");
-            writer = new PrintWriter("./Log " + time + ".csv");
+            writer = new PrintWriter("/home/lvuser/Log" + time + ".csv");
+            // writer = new PrintWriter("./Log " + time + ".csv");
             writer.println("Timestamp, Title, Message");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
