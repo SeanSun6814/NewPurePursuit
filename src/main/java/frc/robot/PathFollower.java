@@ -70,7 +70,6 @@ public class PathFollower {
 
         getClosestWaypoint();
         getInterpolatedWaypoint();
-        getOnPath();
         getProgress();
         getLookAheadPoint();
         getCurvature();
@@ -99,23 +98,21 @@ public class PathFollower {
         double d2 = distanceBetween(robotPos, path.get(backClosestWaypointIndex));
 
         Vector deltaVector = new Vector(path.get(frontClosestWaypointIndex), path.get(backClosestWaypointIndex));
-
         double d = deltaVector.length();
-
         double scale = (d * d + d1 * d1 - d2 * d2) / (2 * d);
-
         Vector xVector = deltaVector.scale(scale / d);
-
         double ratio = xVector.length() / d;
-
+        if (ratio > 1 || ratio < 0) {
+            onPath = false;
+            robotInterpolatedPos = path.get(frontClosestWaypointIndex);
+            return;
+        }
         double vel = path.get(frontClosestWaypointIndex).v
                 + ratio * (path.get(frontClosestWaypointIndex).v - path.get(backClosestWaypointIndex).v);
 
         robotInterpolatedPos = new Waypoint(path.get(frontClosestWaypointIndex).x + xVector.dx,
                 path.get(frontClosestWaypointIndex).y + xVector.dy, vel);
-    }
 
-    private void getOnPath() {
         if (distanceBetween(robotInterpolatedPos, robotPos) < config.lookAheadDistance) {
             onPath = true;
         } else {
