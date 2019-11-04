@@ -141,13 +141,6 @@ public class PathGenerator {
 
         ArrayList<Waypoint> waypoints = path;
 
-        // getting direct DISTANCE between all adjacent smoothed points
-        // for (int i = 0; i < waypoints.size() - 1; i++) {
-        // waypoints.get(i).distance = distanceBetween(waypoints.get(i).p,
-        // waypoints.get(i + 1).p);
-        // }
-
-        // getting the CURVATURE of all points (except endpoints) using adjacent points
         for (int i = 0; i < waypoints.size(); i++) {
             double curvature = 0;
             if (i != 0 && i != waypoints.size() - 1) {
@@ -163,27 +156,13 @@ public class PathGenerator {
                 double r = Math.sqrt((x1 - a) * (x1 - a) + (y1 - b) * (y1 - b));
                 curvature = 1 / r;
             }
-            // generating IDEAL VELOCITIES at each point based on its curvature
-            // there are two constraints on velocity: maxVel (so vel<>infinity on straight
-            // paths) && curvature vel (slow down based on curvature)
-            // Take the min of those two to satisfy them both
             waypoints.get(i).v = Math.min(config.maxVel, config.maxAngVel / curvature);
         }
 
-        // stop at the end
-        // in fact, stop before the path ends (because lookahead point is ahead)
         waypoints.get(waypoints.size() - 1).v = 0;
 
-        // take into account reality by considering maxAcceleration, slow down ahead of
-        // time: first turn maxAccel with respect to time into maxAccel with respect to
-        // DISTANCE
-
-        // loop from back to front and tweak the velocities (leave the endpoint 0)
         for (int i = waypoints.size() - 1 - 1; i >= 0; i--) {
             double distance = distanceBetween(waypoints.get(i + 1), waypoints.get(i));
-            // again, there are two constraints: the wanted velocity at i,
-            // and the max velocity at i to achieve i+1's velocity
-            // Take the min of those two to satisfy them both
 
             waypoints.get(i).v = Math.min(waypoints.get(i).v,
                     getMaxAchieveableVelocity(config.maxAcc, distance, waypoints.get(i + 1).v));

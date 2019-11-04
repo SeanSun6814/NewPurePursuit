@@ -70,6 +70,7 @@ public class PathFollower {
 
         getClosestWaypoint();
         getInterpolatedWaypoint();
+        getOnPath();
         getProgress();
         getLookAheadPoint();
         getCurvature();
@@ -88,7 +89,7 @@ public class PathFollower {
         double leftVel = targetVelocity * (2 + curvature * config.trackWidth) / 2;
         double rightVel = targetVelocity * (2 - curvature * config.trackWidth) / 2;
 
-        updatePrevs();
+        updatePrevVars();
 
         return new MotorOutputs(leftVel, rightVel);
     }
@@ -114,14 +115,26 @@ public class PathFollower {
                 path.get(frontClosestWaypointIndex).y + xVector.dy, vel);
     }
 
+    private void getOnPath() {
+        if (distanceBetween(robotInterpolatedPos, robotPos) < config.lookAheadDistance) {
+            onPath = true;
+        } else {
+            onPath = false;
+        }
+    }
+
     private void getClosestWaypoint() {
         int searchFrom = prevBackClosestWaypointIndex;
         int searchTo = Math.min(searchFrom + 5, path.size());
 
+        if (!onPath) {
+            searchTo = path.size();
+        }
+
         int minIndex = searchFrom;
         double minDistance = Double.MAX_VALUE;
 
-        for (int i = searchFrom; i <= searchTo; i++) {
+        for (int i = searchFrom; i < searchTo; i++) {
             double distance = distanceBetween(path.get(i), robotPos);
             if (distance < minDistance) {
                 minDistance = distance;
@@ -144,7 +157,7 @@ public class PathFollower {
     }
 
     private void getLookAheadPoint() {
-        int searchFrom = Math.max(backClosestWaypointIndex, 0);// Math.max(getClosestWaypointIndex(robotPos), 0);
+        int searchFrom = Math.max(backClosestWaypointIndex, 0);
         int searchTo = path.size() - 1;
 
         for (int i = searchFrom; i < searchTo; i++) {
@@ -158,21 +171,33 @@ public class PathFollower {
             double b = 2 * f.dotProduct(d);
             double c = f.dotProduct(f) - radius * radius;
             double discriminant = Math.sqrt(b * b - 4 * a * c);
-
             double t1 = (-b + discriminant) / (2 * a);
             double t2 = (-b - discriminant) / (2 * a);
 
-            if (t1 >= 0 && t1 <= 1) {
-                Vector v = d.scale(t2);
-                lookAheadPoint = new Point(startOfLine.x + v.dx, startOfLine.y + v.dy);
-                return;
-
-            }
-            if (t2 >= 0 && t2 <= 1) {
+            boolean t1Found = (t1 >= 0 && t1 <= 1);
+            boolean t2Found = (t2 >= 0 && t2 <= 1);
+            if (t1Found && !t2Found) {
                 Vector v = d.scale(t1);
                 lookAheadPoint = new Point(startOfLine.x + v.dx, startOfLine.y + v.dy);
                 return;
+            } else if (!t1Found && t2Found) {
+                Vector v = d.scale(t2);
+                lookAheadPoint = new Point(startOfLine.x + v.dx, startOfLine.y + v.dy);
+                return;
+            } else if (t1Found && t2Found) {
+                Vector v1 = d.scale(t1);
+                Point lookAheadPoint1 = new Point(startOfLine.x + v1.dx, startOfLine.y + v1.dy);
+                Vector v2 = d.scale(t2);
+                Point lookAheadPoint2 = new Point(startOfLine.x + v2.dx, startOfLine.y + v2.dy);
+                if (distanceBetween(lookAheadPoint1, path.get(frontClosestWaypointIndex)) < distanceBetween(
+                        lookAheadPoint2, path.get(frontClosestWaypointIndex))) {
+                    lookAheadPoint = lookAheadPoint1;
+                } else {
+                    lookAheadPoint = lookAheadPoint2;
+                }
+                return;
             }
+
         }
         if (prevLookAheadPoint == null) {
             lookAheadPoint = (Point) path.get(frontClosestWaypointIndex);
@@ -225,7 +250,7 @@ public class PathFollower {
         }
     }
 
-    private void updatePrevs() {
+    private void updatePrevVars() {
         prevLookAheadPoint = lookAheadPoint;
         prevBackClosestWaypointIndex = backClosestWaypointIndex;
         prevFrontClosestWaypointIndex = frontClosestWaypointIndex;
